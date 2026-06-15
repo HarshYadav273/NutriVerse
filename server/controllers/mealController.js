@@ -79,7 +79,7 @@ const meals = [
     fat: 15,
     fiber: 6,
     prepTime: 20,
-    image: 'https://images.unsplash.com/photo-1569058242567-93de6f36f8eb?w=800',
+    image: 'https://images.unsplash.com/photo-1552611052-33e04de1b100?w=800',
     ingredients: [
       '200g rice noodles',
       '3 tbsp peanut butter',
