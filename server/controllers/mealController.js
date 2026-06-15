@@ -1,47 +1,643 @@
-import Meal from '../models/Meal.js';
+import crypto from 'crypto';
+
+// ─── In-memory meal data (from seed.js) ─────────────────────────────
+const meals = [
+  // ── Veg (3)
+  {
+    _id: crypto.randomUUID(),
+    name: 'Mediterranean Veggie Bowl',
+    description: 'A colorful bowl packed with roasted vegetables, quinoa, hummus, and a tangy lemon-tahini dressing.',
+    category: 'Veg',
+    calories: 420,
+    protein: 14,
+    carbs: 58,
+    fat: 16,
+    fiber: 12,
+    prepTime: 25,
+    image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800',
+    ingredients: [
+      '1 cup quinoa, cooked',
+      '1 cup roasted bell peppers',
+      '1/2 cup chickpeas',
+      '1/4 cup hummus',
+      '1/2 cucumber, diced',
+      '1/4 cup cherry tomatoes',
+      '2 tbsp tahini',
+      '1 tbsp lemon juice',
+      'Fresh parsley',
+      'Salt and pepper to taste',
+    ],
+    steps: [
+      'Cook quinoa according to package instructions and let cool slightly.',
+      'Roast bell peppers at 400°F for 20 minutes until tender.',
+      'Arrange quinoa in a bowl and top with roasted peppers, chickpeas, cucumber, and tomatoes.',
+      'Add a generous dollop of hummus.',
+      'Whisk tahini with lemon juice and drizzle over the bowl.',
+      'Garnish with fresh parsley, salt, and pepper.',
+    ],
+  },
+  {
+    _id: crypto.randomUUID(),
+    name: 'Spinach & Mushroom Stuffed Peppers',
+    description: 'Bell peppers stuffed with a savory mix of spinach, mushrooms, brown rice, and melted mozzarella.',
+    category: 'Veg',
+    calories: 310,
+    protein: 12,
+    carbs: 42,
+    fat: 11,
+    fiber: 8,
+    prepTime: 40,
+    image: 'https://images.unsplash.com/photo-1607532941433-304659e8198a?w=800',
+    ingredients: [
+      '4 large bell peppers',
+      '2 cups fresh spinach',
+      '1 cup mushrooms, diced',
+      '1 cup brown rice, cooked',
+      '1/2 cup mozzarella cheese',
+      '2 cloves garlic, minced',
+      '1 tbsp olive oil',
+      '1/2 tsp Italian seasoning',
+      'Salt and pepper',
+    ],
+    steps: [
+      'Preheat oven to 375°F. Cut tops off peppers and remove seeds.',
+      'Heat olive oil in a skillet and sauté garlic and mushrooms for 3 minutes.',
+      'Add spinach and cook until wilted.',
+      'Mix sautéed vegetables with brown rice and Italian seasoning.',
+      'Stuff peppers with the filling and top with mozzarella.',
+      'Bake for 25 minutes until peppers are tender and cheese is golden.',
+    ],
+  },
+  {
+    _id: crypto.randomUUID(),
+    name: 'Thai Peanut Noodle Salad',
+    description: 'Cold rice noodles tossed in a creamy peanut sauce with crunchy veggies and fresh herbs.',
+    category: 'Veg',
+    calories: 380,
+    protein: 11,
+    carbs: 52,
+    fat: 15,
+    fiber: 6,
+    prepTime: 20,
+    image: 'https://images.unsplash.com/photo-1569058242567-93de6f36f8eb?w=800',
+    ingredients: [
+      '200g rice noodles',
+      '3 tbsp peanut butter',
+      '2 tbsp soy sauce',
+      '1 tbsp rice vinegar',
+      '1 tbsp sesame oil',
+      '1 carrot, julienned',
+      '1 red bell pepper, sliced',
+      '1/2 cup edamame',
+      'Fresh cilantro and mint',
+      'Crushed peanuts for garnish',
+    ],
+    steps: [
+      'Cook rice noodles according to package directions, rinse with cold water.',
+      'Whisk together peanut butter, soy sauce, rice vinegar, and sesame oil.',
+      'Julienne carrots and slice bell pepper thinly.',
+      'Toss noodles with peanut sauce and vegetables.',
+      'Top with edamame, fresh herbs, and crushed peanuts.',
+      'Serve cold or at room temperature.',
+    ],
+  },
+
+  // ── Protein (3)
+  {
+    _id: crypto.randomUUID(),
+    name: 'Grilled Chicken Power Bowl',
+    description: 'Herb-marinated grilled chicken breast over brown rice with avocado, black beans, and lime crema.',
+    category: 'Protein',
+    calories: 520,
+    protein: 42,
+    carbs: 48,
+    fat: 18,
+    fiber: 10,
+    prepTime: 30,
+    image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800',
+    ingredients: [
+      '200g chicken breast',
+      '1 cup brown rice, cooked',
+      '1/2 avocado, sliced',
+      '1/2 cup black beans',
+      '1/4 cup corn kernels',
+      '2 tbsp Greek yogurt',
+      '1 lime',
+      '1 tsp cumin',
+      '1 tsp paprika',
+      'Fresh cilantro',
+    ],
+    steps: [
+      'Season chicken with cumin, paprika, salt, and pepper.',
+      'Grill chicken for 6-7 minutes per side until internal temp reaches 165°F.',
+      'Let chicken rest for 5 minutes, then slice.',
+      'Arrange brown rice in a bowl, top with sliced chicken.',
+      'Add black beans, corn, and avocado slices.',
+      'Mix Greek yogurt with lime juice for crema and drizzle on top.',
+    ],
+  },
+  {
+    _id: crypto.randomUUID(),
+    name: 'Salmon Teriyaki with Broccoli',
+    description: 'Glazed salmon fillet with homemade teriyaki sauce served alongside steamed broccoli and jasmine rice.',
+    category: 'Protein',
+    calories: 480,
+    protein: 38,
+    carbs: 40,
+    fat: 20,
+    fiber: 5,
+    prepTime: 25,
+    image: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=800',
+    ingredients: [
+      '200g salmon fillet',
+      '3 tbsp soy sauce',
+      '2 tbsp honey',
+      '1 tbsp rice vinegar',
+      '1 tsp ginger, grated',
+      '2 cups broccoli florets',
+      '1 cup jasmine rice, cooked',
+      '1 tsp sesame seeds',
+      '1 green onion, sliced',
+    ],
+    steps: [
+      'Mix soy sauce, honey, rice vinegar, and ginger for teriyaki sauce.',
+      'Marinate salmon in half the sauce for 10 minutes.',
+      'Pan-sear salmon skin-side down for 4 minutes, flip and cook 3 more minutes.',
+      'Pour remaining sauce over salmon in the last minute of cooking.',
+      'Steam broccoli until bright green and tender-crisp.',
+      'Serve salmon over rice with broccoli, garnish with sesame seeds and green onion.',
+    ],
+  },
+  {
+    _id: crypto.randomUUID(),
+    name: 'Turkey Meatball Marinara',
+    description: 'Lean turkey meatballs simmered in rich marinara sauce with fresh basil, served over whole wheat pasta.',
+    category: 'Protein',
+    calories: 450,
+    protein: 36,
+    carbs: 46,
+    fat: 14,
+    fiber: 7,
+    prepTime: 35,
+    image: 'https://images.unsplash.com/photo-1529042410759-befb1204b468?w=800',
+    ingredients: [
+      '300g ground turkey',
+      '1/4 cup breadcrumbs',
+      '1 egg',
+      '2 cloves garlic, minced',
+      '2 cups marinara sauce',
+      '200g whole wheat spaghetti',
+      'Fresh basil leaves',
+      '2 tbsp parmesan cheese',
+      '1 tsp Italian herbs',
+      'Salt and pepper',
+    ],
+    steps: [
+      'Mix ground turkey with breadcrumbs, egg, garlic, Italian herbs, salt, and pepper.',
+      'Roll mixture into golf-ball-sized meatballs.',
+      'Brown meatballs in a skillet for 3-4 minutes on all sides.',
+      'Add marinara sauce and simmer for 15 minutes until meatballs are cooked through.',
+      'Cook pasta according to package instructions.',
+      'Serve meatballs and sauce over pasta, topped with parmesan and fresh basil.',
+    ],
+  },
+
+  // ── Keto (3)
+  {
+    _id: crypto.randomUUID(),
+    name: 'Bacon Avocado Egg Cups',
+    description: 'Crispy bacon cups filled with baked eggs, avocado, and melted cheese — the ultimate keto breakfast.',
+    category: 'Keto',
+    calories: 340,
+    protein: 22,
+    carbs: 4,
+    fat: 28,
+    fiber: 3,
+    prepTime: 20,
+    image: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=800',
+    ingredients: [
+      '6 slices bacon',
+      '3 large eggs',
+      '1/2 avocado, diced',
+      '1/4 cup cheddar cheese, shredded',
+      '1 tbsp chives, chopped',
+      'Salt and pepper',
+      'Pinch of red pepper flakes',
+    ],
+    steps: [
+      'Preheat oven to 375°F. Line a muffin tin with bacon slices forming cups.',
+      'Pre-bake bacon cups for 8 minutes until partially crispy.',
+      'Crack an egg into each bacon cup.',
+      'Add diced avocado and sprinkle with cheddar cheese.',
+      'Bake for 12-15 minutes until eggs are set to your liking.',
+      'Garnish with chives and red pepper flakes.',
+    ],
+  },
+  {
+    _id: crypto.randomUUID(),
+    name: 'Cauliflower Crust Pizza',
+    description: 'Low-carb pizza with a crispy cauliflower crust, loaded with mozzarella, pepperoni, and fresh veggies.',
+    category: 'Keto',
+    calories: 290,
+    protein: 20,
+    carbs: 8,
+    fat: 20,
+    fiber: 3,
+    prepTime: 40,
+    image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800',
+    ingredients: [
+      '1 medium cauliflower head',
+      '1 egg',
+      '1 cup mozzarella cheese',
+      '1/4 cup almond flour',
+      '1/4 cup pizza sauce (no sugar added)',
+      'Pepperoni slices',
+      'Bell pepper, sliced',
+      'Italian seasoning',
+      'Fresh basil',
+    ],
+    steps: [
+      'Rice cauliflower in a food processor, microwave for 5 minutes, and squeeze out excess water.',
+      'Mix cauliflower with egg, 1/2 cup mozzarella, almond flour, and Italian seasoning.',
+      'Press mixture into a thin circle on a parchment-lined baking sheet.',
+      'Bake crust at 425°F for 15 minutes until golden.',
+      'Spread pizza sauce, add remaining mozzarella, pepperoni, and bell pepper.',
+      'Bake 10 more minutes until cheese is bubbly. Top with fresh basil.',
+    ],
+  },
+  {
+    _id: crypto.randomUUID(),
+    name: 'Butter Garlic Steak Bites',
+    description: 'Tender sirloin cubes seared in garlic butter with asparagus — a quick keto-friendly dinner in 15 minutes.',
+    category: 'Keto',
+    calories: 410,
+    protein: 35,
+    carbs: 5,
+    fat: 30,
+    fiber: 2,
+    prepTime: 15,
+    image: 'https://images.unsplash.com/photo-1558030006-450675393462?w=800',
+    ingredients: [
+      '300g sirloin steak, cubed',
+      '3 tbsp butter',
+      '4 cloves garlic, minced',
+      '1 bunch asparagus, trimmed',
+      '1 tbsp olive oil',
+      '1 tsp thyme',
+      'Salt and pepper',
+      'Fresh parsley',
+    ],
+    steps: [
+      'Season steak cubes with salt, pepper, and thyme.',
+      'Heat olive oil in a cast iron skillet over high heat.',
+      'Sear steak bites for 2-3 minutes per side until browned.',
+      'Add butter and garlic, baste steak bites for 1 minute.',
+      'Remove steak and sauté asparagus in the same pan for 3-4 minutes.',
+      'Serve steak bites over asparagus, spooning garlic butter on top.',
+    ],
+  },
+
+  // ── Low-Carb (3)
+  {
+    _id: crypto.randomUUID(),
+    name: 'Zucchini Noodle Bolognese',
+    description: 'Spiralized zucchini noodles topped with a rich, slow-simmered beef bolognese and fresh parmesan.',
+    category: 'Low-Carb',
+    calories: 320,
+    protein: 28,
+    carbs: 12,
+    fat: 18,
+    fiber: 4,
+    prepTime: 30,
+    image: 'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=800',
+    ingredients: [
+      '3 medium zucchini, spiralized',
+      '250g lean ground beef',
+      '1 cup crushed tomatoes',
+      '1 small onion, diced',
+      '2 cloves garlic, minced',
+      '1 tbsp olive oil',
+      '1 tsp oregano',
+      '1/2 tsp basil',
+      'Parmesan cheese',
+      'Salt and pepper',
+    ],
+    steps: [
+      'Heat olive oil in a pan and sauté onion and garlic until fragrant.',
+      'Add ground beef and cook until browned, breaking apart.',
+      'Pour in crushed tomatoes, oregano, and basil. Simmer for 15 minutes.',
+      'Spiralize zucchini into noodle shapes.',
+      "Lightly sauté zucchini noodles for 2-3 minutes (don't overcook).",
+      'Serve zoodles topped with bolognese sauce and shaved parmesan.',
+    ],
+  },
+  {
+    _id: crypto.randomUUID(),
+    name: 'Lettuce Wrap Tacos',
+    description: 'Seasoned ground chicken in crisp butter lettuce cups with pico de gallo and creamy avocado.',
+    category: 'Low-Carb',
+    calories: 280,
+    protein: 26,
+    carbs: 10,
+    fat: 16,
+    fiber: 5,
+    prepTime: 15,
+    image: 'https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?w=800',
+    ingredients: [
+      '250g ground chicken',
+      '8 butter lettuce leaves',
+      '1 avocado, sliced',
+      '1/2 cup pico de gallo',
+      '1 tsp chili powder',
+      '1/2 tsp cumin',
+      '1/2 tsp garlic powder',
+      '2 tbsp sour cream',
+      'Fresh lime wedges',
+      'Fresh cilantro',
+    ],
+    steps: [
+      'Season ground chicken with chili powder, cumin, garlic powder, salt, and pepper.',
+      'Cook chicken in a skillet over medium-high heat until browned.',
+      'Wash and dry butter lettuce leaves to form cups.',
+      'Spoon seasoned chicken into lettuce cups.',
+      'Top with pico de gallo, avocado slices, and a dollop of sour cream.',
+      'Squeeze lime juice over top and garnish with cilantro.',
+    ],
+  },
+  {
+    _id: crypto.randomUUID(),
+    name: 'Shrimp & Cauliflower Fried Rice',
+    description: 'A light twist on classic fried rice using riced cauliflower, jumbo shrimp, and Asian aromatics.',
+    category: 'Low-Carb',
+    calories: 260,
+    protein: 24,
+    carbs: 14,
+    fat: 12,
+    fiber: 4,
+    prepTime: 20,
+    image: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=800',
+    ingredients: [
+      '200g jumbo shrimp, peeled',
+      '3 cups cauliflower rice',
+      '2 eggs, beaten',
+      '2 tbsp soy sauce',
+      '1 tbsp sesame oil',
+      '1 cup mixed vegetables (peas, carrots, corn)',
+      '2 green onions, sliced',
+      '1 tsp ginger, grated',
+      '1 clove garlic, minced',
+    ],
+    steps: [
+      'Heat sesame oil in a large wok or skillet over high heat.',
+      'Cook shrimp 2 minutes per side, remove and set aside.',
+      'Scramble eggs in the same pan, break into pieces.',
+      'Add garlic, ginger, and mixed vegetables, stir-fry 2 minutes.',
+      'Add cauliflower rice and soy sauce, cook 4-5 minutes.',
+      'Return shrimp and eggs to the pan, toss everything together. Garnish with green onions.',
+    ],
+  },
+
+  // ── Mediterranean (3)
+  {
+    _id: crypto.randomUUID(),
+    name: 'Greek Chicken Souvlaki Plate',
+    description: 'Lemon-herb marinated chicken skewers with tzatziki, warm pita, and a fresh Greek salad.',
+    category: 'Mediterranean',
+    calories: 460,
+    protein: 34,
+    carbs: 38,
+    fat: 20,
+    fiber: 6,
+    prepTime: 30,
+    image: 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=800',
+    ingredients: [
+      '250g chicken breast, cubed',
+      '2 tbsp olive oil',
+      '2 tbsp lemon juice',
+      '1 tsp oregano',
+      '2 pita breads',
+      '1/2 cup tzatziki sauce',
+      '1 cucumber, sliced',
+      '1 cup cherry tomatoes',
+      '1/4 red onion, sliced',
+      'Kalamata olives',
+      'Feta cheese crumbles',
+    ],
+    steps: [
+      'Marinate chicken in olive oil, lemon juice, oregano, salt, and pepper for 15 minutes.',
+      'Thread chicken onto skewers.',
+      'Grill skewers 4-5 minutes per side until charred and cooked through.',
+      'Warm pita bread on the grill for 30 seconds per side.',
+      'Assemble salad with cucumber, tomatoes, red onion, olives, and feta.',
+      'Serve skewers with pita, tzatziki, and Greek salad.',
+    ],
+  },
+  {
+    _id: crypto.randomUUID(),
+    name: 'Baked Falafel & Hummus Wrap',
+    description: 'Crispy baked falafel with creamy hummus, pickled veggies, and tahini in a warm whole wheat wrap.',
+    category: 'Mediterranean',
+    calories: 390,
+    protein: 16,
+    carbs: 50,
+    fat: 15,
+    fiber: 11,
+    prepTime: 35,
+    image: 'https://images.unsplash.com/photo-1529059997568-3d847b1154f0?w=800',
+    ingredients: [
+      '1 can chickpeas, drained',
+      '1/4 cup fresh parsley',
+      '2 cloves garlic',
+      '1 tsp cumin',
+      '2 tbsp flour',
+      '2 whole wheat wraps',
+      '1/4 cup hummus',
+      '2 tbsp tahini',
+      'Pickled turnips',
+      'Lettuce and tomato',
+    ],
+    steps: [
+      'Pulse chickpeas, parsley, garlic, cumin, and flour in a food processor until coarse.',
+      'Form mixture into small patties and place on a greased baking sheet.',
+      'Bake at 400°F for 25 minutes, flipping halfway, until golden and crispy.',
+      'Warm wraps and spread hummus generously.',
+      'Add falafel, lettuce, tomato, and pickled turnips.',
+      'Drizzle with tahini sauce and roll tightly.',
+    ],
+  },
+  {
+    _id: crypto.randomUUID(),
+    name: 'Shakshuka Sunrise',
+    description: 'Eggs poached in a spiced tomato and bell pepper sauce with crusty bread — a Mediterranean breakfast staple.',
+    category: 'Mediterranean',
+    calories: 350,
+    protein: 18,
+    carbs: 32,
+    fat: 16,
+    fiber: 6,
+    prepTime: 25,
+    image: 'https://images.unsplash.com/photo-1590412200988-a436970781fa?w=800',
+    ingredients: [
+      '4 large eggs',
+      '2 cups crushed tomatoes',
+      '1 red bell pepper, diced',
+      '1 onion, diced',
+      '3 cloves garlic, minced',
+      '1 tsp cumin',
+      '1 tsp paprika',
+      '1/2 tsp chili flakes',
+      '2 tbsp olive oil',
+      'Fresh cilantro',
+      'Crusty bread for serving',
+    ],
+    steps: [
+      'Heat olive oil in a deep skillet and sauté onion and bell pepper for 5 minutes.',
+      'Add garlic, cumin, paprika, and chili flakes, cook 1 minute.',
+      'Pour in crushed tomatoes and simmer for 10 minutes until thickened.',
+      'Make 4 wells in the sauce and crack an egg into each.',
+      'Cover and cook 5-7 minutes until egg whites are set but yolks are runny.',
+      'Garnish with cilantro and serve with crusty bread for dipping.',
+    ],
+  },
+
+  // ── Vegan (3)
+  {
+    _id: crypto.randomUUID(),
+    name: 'Rainbow Buddha Bowl',
+    description: 'A nourishing bowl with sweet potato, quinoa, kale, beets, chickpeas, and a turmeric-ginger dressing.',
+    category: 'Vegan',
+    calories: 440,
+    protein: 15,
+    carbs: 62,
+    fat: 16,
+    fiber: 14,
+    prepTime: 35,
+    image: 'https://images.unsplash.com/photo-1540914124281-342587941389?w=800',
+    ingredients: [
+      '1 sweet potato, cubed',
+      '1 cup quinoa, cooked',
+      '2 cups kale, massaged',
+      '1/2 cup roasted beets',
+      '1/2 cup chickpeas',
+      '1/4 avocado, sliced',
+      '2 tbsp olive oil',
+      '1 tsp turmeric',
+      '1 tsp ginger, grated',
+      '1 tbsp apple cider vinegar',
+      'Pumpkin seeds',
+    ],
+    steps: [
+      'Roast sweet potato cubes at 400°F for 25 minutes with olive oil and salt.',
+      'Cook quinoa and massage kale with a pinch of salt and lemon juice.',
+      'Make dressing by whisking olive oil, turmeric, ginger, and apple cider vinegar.',
+      'Arrange quinoa, kale, sweet potato, beets, and chickpeas in a bowl.',
+      'Top with avocado slices and pumpkin seeds.',
+      'Drizzle with turmeric-ginger dressing.',
+    ],
+  },
+  {
+    _id: crypto.randomUUID(),
+    name: 'Creamy Coconut Lentil Curry',
+    description: 'Red lentils simmered in coconut milk with warming spices, spinach, and served over basmati rice.',
+    category: 'Vegan',
+    calories: 400,
+    protein: 18,
+    carbs: 56,
+    fat: 12,
+    fiber: 12,
+    prepTime: 30,
+    image: 'https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?w=800',
+    ingredients: [
+      '1 cup red lentils',
+      '1 can coconut milk',
+      '1 cup spinach',
+      '1 onion, diced',
+      '3 cloves garlic, minced',
+      '1 tbsp curry powder',
+      '1 tsp turmeric',
+      '1 tsp garam masala',
+      '1 cup vegetable broth',
+      '1 cup basmati rice',
+      'Fresh cilantro',
+    ],
+    steps: [
+      'Rinse lentils and set aside. Cook basmati rice according to package.',
+      'Sauté onion in olive oil for 4 minutes, add garlic and spices, cook 1 minute.',
+      'Add lentils, coconut milk, and vegetable broth. Bring to a boil.',
+      'Reduce heat and simmer 20 minutes until lentils are soft and creamy.',
+      'Stir in spinach until wilted.',
+      'Serve curry over rice and garnish with fresh cilantro.',
+    ],
+  },
+  {
+    _id: crypto.randomUUID(),
+    name: 'Mango Black Bean Tacos',
+    description: 'Crispy corn tortillas filled with spiced black beans, fresh mango salsa, and a creamy cashew crema.',
+    category: 'Vegan',
+    calories: 360,
+    protein: 13,
+    carbs: 54,
+    fat: 12,
+    fiber: 11,
+    prepTime: 20,
+    image: 'https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?w=800',
+    ingredients: [
+      '6 small corn tortillas',
+      '1 can black beans, drained',
+      '1 ripe mango, diced',
+      '1/4 red onion, finely diced',
+      '1 jalapeño, minced',
+      '1/4 cup cashews, soaked',
+      '2 tbsp lime juice',
+      '1 tsp cumin',
+      '1/2 tsp smoked paprika',
+      'Fresh cilantro',
+    ],
+    steps: [
+      'Heat black beans with cumin, smoked paprika, and a pinch of salt.',
+      'Make mango salsa by mixing mango, red onion, jalapeño, lime juice, and cilantro.',
+      'Blend soaked cashews with lime juice and water for cashew crema.',
+      'Warm corn tortillas in a dry skillet until slightly charred.',
+      'Fill tortillas with spiced black beans and top with mango salsa.',
+      'Drizzle with cashew crema and extra cilantro.',
+    ],
+  },
+];
 
 /**
  * GET /api/meals
  * Get all meals with optional category & search filters
  */
-export const getMeals = async (req, res, next) => {
-  try {
-    const { category, search } = req.query;
-    const filter = {};
+export const getMeals = (req, res) => {
+  const { category, search } = req.query;
+  let result = [...meals];
 
-    if (category && category !== 'All') {
-      filter.category = category;
-    }
-
-    if (search) {
-      filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-      ];
-    }
-
-    const meals = await Meal.find(filter).sort({ createdAt: -1 });
-    res.json(meals);
-  } catch (error) {
-    next(error);
+  if (category && category !== 'All') {
+    result = result.filter((m) => m.category === category);
   }
+
+  if (search) {
+    const term = search.toLowerCase();
+    result = result.filter(
+      (m) =>
+        m.name.toLowerCase().includes(term) ||
+        m.description.toLowerCase().includes(term)
+    );
+  }
+
+  res.json(result);
 };
 
 /**
  * GET /api/meals/:id
  * Get a single meal by ID
  */
-export const getMealById = async (req, res, next) => {
-  try {
-    const meal = await Meal.findById(req.params.id);
+export const getMealById = (req, res) => {
+  const meal = meals.find((m) => m._id === req.params.id);
 
-    if (!meal) {
-      res.status(404);
-      throw new Error('Meal not found');
-    }
-
-    res.json(meal);
-  } catch (error) {
-    next(error);
+  if (!meal) {
+    return res.status(404).json({ message: 'Meal not found' });
   }
+
+  res.json(meal);
 };

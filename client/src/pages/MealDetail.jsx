@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useMeals } from '../context/MealContext';
@@ -11,73 +11,29 @@ import {
   ChefHat,
   Sparkles,
   CheckCircle2,
-  Loader2,
   CalendarPlus,
+  Leaf,
 } from 'lucide-react';
-import API from '../utils/api';
 import toast from 'react-hot-toast';
+
+// Static nutrition tips based on category
+const nutritionTips = {
+  'Veg': '🥬 Vegetarian meals are rich in fiber and antioxidants. Pair with whole grains for complete protein intake and better iron absorption.',
+  'Protein': '💪 High-protein meals support muscle recovery and growth. Spread protein intake across meals for optimal absorption — aim for 20-40g per serving.',
+  'Keto': '🥑 Keto meals keep your body in fat-burning mode. The healthy fats here promote satiety — pair with leafy greens for micronutrient balance.',
+  'Low-Carb': '🥗 Low-carb eating stabilizes blood sugar and reduces cravings. These meals provide sustained energy without the post-meal crash.',
+  'Mediterranean': '🫒 Mediterranean diet is linked to longevity and heart health. The olive oil and fish provide omega-3 fatty acids for brain function.',
+  'Vegan': '🌱 Plant-based meals are packed with phytonutrients. Consider pairing with vitamin B12-fortified foods for complete nutrition.',
+};
 
 const MealDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { selectedMeal: meal, loading, fetchMealById } = useMeals();
-  const [aiTip, setAiTip] = useState('');
-  const [aiLoading, setAiLoading] = useState(false);
 
   useEffect(() => {
     fetchMealById(id);
   }, [id, fetchMealById]);
-
-  // Fetch AI tip when meal loads
-  useEffect(() => {
-    const fetchAiTip = async () => {
-      if (!meal) return;
-      const token = localStorage.getItem('nutriverse_token');
-      if (!token) return; // Only fetch for logged in users
-
-      setAiLoading(true);
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/ai/chat`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            message: `Give me a brief (2-3 sentences) nutrition tip about "${meal.name}" - mention one health benefit and one suggestion to make it even healthier. Be concise.`,
-            history: [],
-          }),
-        });
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let tip = '';
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          const text = decoder.decode(value);
-          const lines = text.split('\n').filter((l) => l.startsWith('data: '));
-          for (const line of lines) {
-            try {
-              const data = JSON.parse(line.slice(6));
-              if (data.content) {
-                tip += data.content;
-                setAiTip(tip);
-              }
-            } catch {}
-          }
-        }
-      } catch {
-        // Silently fail — AI tip is optional
-      } finally {
-        setAiLoading(false);
-      }
-    };
-
-    fetchAiTip();
-  }, [meal]);
 
   if (loading || !meal) {
     return (
@@ -96,6 +52,8 @@ const MealDetail = () => {
       </div>
     );
   }
+
+  const tip = nutritionTips[meal.category] || '🍽️ A balanced meal provides essential macronutrients for energy, repair, and overall wellbeing.';
 
   return (
     <div className="min-h-screen pt-20 pb-16">
@@ -182,7 +140,7 @@ const MealDetail = () => {
             </motion.div>
           </div>
 
-          {/* Right: Nutrition + AI */}
+          {/* Right: Nutrition + Tip */}
           <div className="space-y-8">
             {/* Nutrition Chart */}
             <motion.div
@@ -202,7 +160,7 @@ const MealDetail = () => {
               />
             </motion.div>
 
-            {/* AI Tip */}
+            {/* Nutrition Tip (static, no auth needed) */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -211,20 +169,9 @@ const MealDetail = () => {
             >
               <h2 className="font-heading font-semibold text-lg text-white mb-3 flex items-center gap-2">
                 <Sparkles size={18} className="text-amber-400" />
-                AI Nutrition Tip
+                Nutrition Tip
               </h2>
-              {aiLoading ? (
-                <div className="flex items-center gap-2 text-text-secondary text-sm">
-                  <Loader2 size={16} className="animate-spin" />
-                  Generating tip...
-                </div>
-              ) : aiTip ? (
-                <p className="text-text-secondary text-sm leading-relaxed">{aiTip}</p>
-              ) : (
-                <p className="text-text-secondary text-sm">
-                  Sign in to get personalized AI nutrition tips for this meal.
-                </p>
-              )}
+              <p className="text-text-secondary text-sm leading-relaxed">{tip}</p>
             </motion.div>
 
             {/* Add to Plan Button */}

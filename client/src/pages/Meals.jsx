@@ -4,7 +4,17 @@ import { useMeals } from '../context/MealContext';
 import { useDebounce } from '../hooks/useDebounce';
 import MealCard from '../components/MealCard';
 import { MealCardSkeleton } from '../components/LoadingSkeleton';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, UtensilsCrossed, Leaf, Drumstick, Flame, Salad, Globe, Vegan } from 'lucide-react';
+
+const categoryIcons = {
+  'All': UtensilsCrossed,
+  'Veg': Leaf,
+  'Protein': Drumstick,
+  'Keto': Flame,
+  'Low-Carb': Salad,
+  'Mediterranean': Globe,
+  'Vegan': Vegan,
+};
 
 const Meals = () => {
   const { meals, loading, categories, selectedCategory, fetchMeals, filterByCategory } = useMeals();
@@ -24,10 +34,19 @@ const Meals = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
-          <h1 className="font-heading font-bold text-3xl sm:text-4xl mb-3">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+            className="inline-flex items-center gap-2 bg-accent/10 border border-accent/30 rounded-full px-4 py-1.5 mb-4"
+          >
+            <UtensilsCrossed size={14} className="text-accent-light" />
+            <span className="text-sm text-accent-light font-medium">{meals.length} Recipes Available</span>
+          </motion.div>
+          <h1 className="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl mb-3">
             Discover <span className="text-gradient">Nutritious Meals</span>
           </h1>
-          <p className="text-text-secondary max-w-xl mx-auto">
+          <p className="text-text-secondary max-w-xl mx-auto text-lg">
             Browse our curated collection of healthy meals across multiple dietary categories.
           </p>
         </motion.div>
@@ -39,14 +58,14 @@ const Meals = () => {
           transition={{ delay: 0.1 }}
           className="max-w-xl mx-auto mb-8"
         >
-          <div className="relative">
-            <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" />
+          <div className="relative group">
+            <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary group-focus-within:text-accent-light transition-colors" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search meals by name..."
-              className="input-dark pl-12 pr-4"
+              className="input-dark pl-12 pr-4 !rounded-2xl !py-4 text-base"
               id="meal-search"
             />
           </div>
@@ -57,22 +76,25 @@ const Meals = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="flex items-center gap-2 overflow-x-auto pb-2 mb-8 scrollbar-hide"
+          className="flex items-center gap-2 overflow-x-auto pb-2 mb-10 scrollbar-hide justify-center flex-wrap"
         >
-          <Filter size={16} className="text-text-secondary flex-shrink-0" />
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => filterByCategory(cat)}
-              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-300 ${
-                selectedCategory === cat
-                  ? 'bg-accent text-white shadow-glow-sm'
-                  : 'bg-surface border border-card-border text-text-secondary hover:text-white hover:border-accent/50'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+          {categories.map((cat) => {
+            const Icon = categoryIcons[cat] || Filter;
+            return (
+              <button
+                key={cat}
+                onClick={() => filterByCategory(cat)}
+                className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-300 flex items-center gap-2 ${
+                  selectedCategory === cat
+                    ? 'bg-accent text-white shadow-glow-sm scale-105'
+                    : 'bg-surface border border-card-border text-text-secondary hover:text-white hover:border-accent/50 hover:bg-accent/5'
+                }`}
+              >
+                <Icon size={14} />
+                {cat}
+              </button>
+            );
+          })}
         </motion.div>
 
         {/* Meal Grid */}

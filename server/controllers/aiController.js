@@ -1,5 +1,4 @@
 import Groq from 'groq-sdk';
-import ChatLog from '../models/ChatLog.js';
 
 const SYSTEM_PROMPT = `You are NutriBot, an expert nutritionist AI assistant for the NutriVerse platform. You help users with:
 - Personalized meal suggestions based on dietary goals
@@ -21,7 +20,6 @@ Keep responses under 400 words unless the user asks for detailed plans.`;
 export const chatWithAI = async (req, res, next) => {
   try {
     const { message, history = [] } = req.body;
-    const userId = req.user._id;
 
     if (!message) {
       res.status(400);
@@ -56,12 +54,9 @@ export const chatWithAI = async (req, res, next) => {
       stream: true,
     });
 
-    let fullResponse = '';
-
     for await (const chunk of chatCompletion) {
       const content = chunk.choices[0]?.delta?.content || '';
       if (content) {
-        fullResponse += content;
         res.write(`data: ${JSON.stringify({ content })}\n\n`);
       }
     }
@@ -69,20 +64,6 @@ export const chatWithAI = async (req, res, next) => {
     // Send done signal
     res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
     res.end();
-
-    // Save to chat log (fire and forget)
-    ChatLog.findOneAndUpdate(
-      { userId },
-      {
-        $push: {
-          messages: [
-            { role: 'user', content: message },
-            { role: 'assistant', content: fullResponse },
-          ],
-        },
-      },
-      { upsert: true, new: true }
-    ).catch((err) => console.error('Failed to save chat log:', err));
   } catch (error) {
     // If headers already sent (streaming started), just end
     if (res.headersSent) {

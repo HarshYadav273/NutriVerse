@@ -7,17 +7,13 @@ import { MealProvider } from './context/MealContext';
 
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import ProtectedRoute from './components/ProtectedRoute';
 
 import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
 import Meals from './pages/Meals';
 import MealDetail from './pages/MealDetail';
 import AiChat from './pages/AiChat';
 import Planner from './pages/Planner';
 import Dashboard from './pages/Dashboard';
-import Profile from './pages/Profile';
 
 const PageTransition = ({ children }) => (
   <motion.div
@@ -43,35 +39,11 @@ function App() {
             <AnimatePresence mode="wait">
               <Routes location={location} key={location.pathname}>
                 <Route path="/" element={<PageTransition><Home /></PageTransition>} />
-                <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
-                <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
                 <Route path="/meals" element={<PageTransition><Meals /></PageTransition>} />
                 <Route path="/meals/:id" element={<PageTransition><MealDetail /></PageTransition>} />
-                <Route
-                  path="/ai-chat"
-                  element={
-                    <ProtectedRoute>
-                      <PageTransition><AiChat /></PageTransition>
-                    </ProtectedRoute>
-                  }
-                />
+                <Route path="/ai-chat" element={<PageTransition><AiChat /></PageTransition>} />
                 <Route path="/planner" element={<PageTransition><Planner /></PageTransition>} />
-                <Route
-                  path="/dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <PageTransition><Dashboard /></PageTransition>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/profile"
-                  element={
-                    <ProtectedRoute>
-                      <PageTransition><Profile /></PageTransition>
-                    </ProtectedRoute>
-                  }
-                />
+                <Route path="/dashboard" element={<PageTransition><Dashboard /></PageTransition>} />
               </Routes>
             </AnimatePresence>
           </main>

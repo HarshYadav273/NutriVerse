@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ChatBubble, { TypingIndicator } from '../components/ChatBubble';
-import { useAuth } from '../context/AuthContext';
 import { Send, Sparkles, Trash2, Bot } from 'lucide-react';
 
 const quickPrompts = [
@@ -14,7 +13,6 @@ const quickPrompts = [
 ];
 
 const AiChat = () => {
-  const { token } = useAuth();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
@@ -42,7 +40,6 @@ const AiChat = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           message: text,
@@ -91,7 +88,7 @@ const AiChat = () => {
         ...prev,
         {
           role: 'assistant',
-          content: "Sorry, I couldn't process your request. Please make sure the Groq API key is configured and try again.",
+          content: "Sorry, I couldn't process your request. Please make sure the server is running and the Groq API key is configured.",
           timestamp: new Date().toISOString(),
         },
       ]);

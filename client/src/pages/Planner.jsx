@@ -9,14 +9,15 @@ import {
   PointerSensor,
 } from '@dnd-kit/core';
 import { useDroppable, useDraggable } from '@dnd-kit/core';
-import { useAuth } from '../context/AuthContext';
 import API from '../utils/api';
 import { getCurrentWeek } from '../utils/formatCalories';
-import { CalendarDays, Save, Loader2, Flame, X, Plus, GripVertical } from 'lucide-react';
+import { CalendarDays, Save, Loader2, Flame, X, Plus, GripVertical, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 const DAY_LABELS = { mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday', thu: 'Thursday', fri: 'Friday', sat: 'Saturday', sun: 'Sunday' };
+
+const STORAGE_KEY = 'nutriverse_meal_plan';
 
 function DraggableMeal({ meal, id }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id, data: { meal } });
@@ -90,10 +91,14 @@ function DroppableDay({ day, meals, onRemoveMeal }) {
 }
 
 const Planner = () => {
-  const { user } = useAuth();
   const [allMeals, setAllMeals] = useState([]);
-  const [plan, setPlan] = useState({
-    mon: [], tue: [], wed: [], thu: [], fri: [], sat: [], sun: [],
+  const [plan, setPlan] = useState(() => {
+    // Load from localStorage on mount
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return { mon: [], tue: [], wed: [], thu: [], fri: [], sat: [], sun: [] };
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -102,18 +107,12 @@ const Planner = () => {
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
-  // Load meals + existing plan
+  // Load meals
   useEffect(() => {
     const load = async () => {
       try {
-        const [mealsRes, planRes] = await Promise.all([
-          API.get('/api/meals'),
-          user ? API.get(`/api/planner/${user._id}?week=${getCurrentWeek()}`).catch(() => null) : null,
-        ]);
+        const mealsRes = await API.get('/api/meals');
         setAllMeals(mealsRes.data);
-        if (planRes?.data?.days) {
-          setPlan(planRes.data.days);
-        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -121,7 +120,12 @@ const Planner = () => {
       }
     };
     load();
-  }, [user]);
+  }, []);
+
+  // Save plan to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(plan));
+  }, [plan]);
 
   const handleDragStart = (event) => {
     const meal = event.active.data.current.meal;
@@ -148,25 +152,13 @@ const Planner = () => {
     }));
   };
 
-  const savePlan = async () => {
+  const savePlan = () => {
     setSaving(true);
-    try {
-      // Convert meal objects to IDs
-      const daysWithIds = {};
-      for (const day of DAYS) {
-        daysWithIds[day] = plan[day].map((m) => m._id);
-      }
-
-      await API.post('/api/planner', {
-        week: getCurrentWeek(),
-        days: daysWithIds,
-      });
-      toast.success('Meal plan saved! 🎯');
-    } catch (err) {
-      toast.error('Failed to save plan');
-    } finally {
+    // Save is already handled by the useEffect above
+    setTimeout(() => {
       setSaving(false);
-    }
+      toast.success('Meal plan saved locally! 🎯');
+    }, 500);
   };
 
   if (loading) {
@@ -191,18 +183,16 @@ const Planner = () => {
               <CalendarDays className="text-accent-light" />
               Meal Planner
             </h1>
-            <p className="text-text-secondary text-sm mt-1">Week: {getCurrentWeek()}</p>
+            <p className="text-text-secondary text-sm mt-1">Week: {getCurrentWeek()} • Drag meals to plan your week</p>
           </div>
-          {user && (
-            <button
-              onClick={savePlan}
-              disabled={saving}
-              className="btn-primary flex items-center gap-2 text-sm"
-            >
-              {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-              Save Plan
-            </button>
-          )}
+          <button
+            onClick={savePlan}
+            disabled={saving}
+            className="btn-primary flex items-center gap-2 text-sm"
+          >
+            {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+            Save Plan
+          </button>
         </motion.div>
 
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>

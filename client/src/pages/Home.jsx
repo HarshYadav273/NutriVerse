@@ -12,9 +12,10 @@ import {
   Star,
   ArrowRight,
   Zap,
-  Shield,
+  Heart,
   Target,
 } from 'lucide-react';
+import FeaturedMeals from '../components/FeaturedMeals';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 30 },
@@ -57,9 +58,9 @@ const features = [
     description: 'Discover meals across 6 categories — Veg, Protein, Keto, Low-Carb, Mediterranean, and Vegan.',
   },
   {
-    icon: Shield,
-    title: 'Secure & Private',
-    description: 'Your data is encrypted and secure with JWT authentication. Your health data stays yours.',
+    icon: Heart,
+    title: 'Health First',
+    description: 'Every recipe is nutritionist-reviewed with detailed macro and micronutrient breakdowns.',
   },
   {
     icon: Target,
@@ -69,9 +70,9 @@ const features = [
 ];
 
 const steps = [
-  { num: '01', title: 'Create Account', desc: 'Sign up in seconds and set your dietary preferences.' },
-  { num: '02', title: 'Discover Meals', desc: 'Browse our curated collection filtered by your diet type.' },
-  { num: '03', title: 'Plan & Track', desc: 'Build weekly meal plans and track your nutrition goals.' },
+  { num: '01', title: 'Browse Meals', desc: 'Explore our curated collection of healthy meals across 6 dietary categories.' },
+  { num: '02', title: 'Plan Your Week', desc: 'Build weekly meal plans with an intuitive drag-and-drop planner.' },
+  { num: '03', title: 'Track & Thrive', desc: 'Monitor your nutrition, water intake, and BMI to reach your goals.' },
 ];
 
 const testimonials = [
@@ -126,12 +127,12 @@ const Home = () => {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Link to="/register" className="btn-primary text-base flex items-center justify-center gap-2 group">
-                  Get Started Free
+                <Link to="/meals" className="btn-primary text-base flex items-center justify-center gap-2 group">
+                  Explore Meals
                   <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                 </Link>
-                <Link to="/meals" className="btn-outline text-base flex items-center justify-center gap-2">
-                  Explore Meals
+                <Link to="/planner" className="btn-outline text-base flex items-center justify-center gap-2">
+                  Plan Your Week
                   <ChevronRight size={18} />
                 </Link>
               </div>
@@ -201,6 +202,9 @@ const Home = () => {
           </div>
         </motion.div>
       </section>
+
+      {/* ─── FEATURED MEALS ────────────────────────── */}
+      <FeaturedMeals />
 
       {/* ─── FEATURES ─────────────────────────────── */}
       <section className="py-24 relative">
@@ -337,10 +341,10 @@ const Home = () => {
                 <span className="text-gradient">Nutrition?</span>
               </h2>
               <p className="text-text-secondary max-w-xl mx-auto mb-8">
-                Join NutriVerse today and take the first step toward a healthier, more balanced lifestyle.
+                Start exploring delicious, healthy meals and take the first step toward a more balanced lifestyle.
               </p>
-              <Link to="/register" className="btn-primary text-base inline-flex items-center gap-2 group">
-                Get Started — It's Free
+              <Link to="/meals" className="btn-primary text-base inline-flex items-center gap-2 group">
+                Explore Meals Now
                 <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>

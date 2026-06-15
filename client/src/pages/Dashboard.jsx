@@ -1,9 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
-import { useAuth } from '../context/AuthContext';
-import API from '../utils/api';
-import { getCurrentWeek, calculateBMI } from '../utils/formatCalories';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { calculateBMI } from '../utils/formatCalories';
 import {
   LayoutDashboard,
   TrendingUp,
@@ -11,7 +9,7 @@ import {
   Calculator,
   Flame,
   UtensilsCrossed,
-  Loader2,
+  Activity,
 } from 'lucide-react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 
@@ -28,41 +26,21 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
+// Sample weekly data for demo
+const sampleWeeklyData = [
+  { day: 'Mon', calories: 1850 },
+  { day: 'Tue', calories: 2100 },
+  { day: 'Wed', calories: 1750 },
+  { day: 'Thu', calories: 2300 },
+  { day: 'Fri', calories: 1950 },
+  { day: 'Sat', calories: 2200 },
+  { day: 'Sun', calories: 1800 },
+];
+
 const Dashboard = () => {
-  const { user } = useAuth();
-  const [plan, setPlan] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [waterIntake, setWaterIntake] = useLocalStorage('nutriverse_water', 0);
-  const [bmiWeight, setBmiWeight] = useState(user?.weight || '');
-  const [bmiHeight, setBmiHeight] = useState(user?.height || '');
-
-  // Load current meal plan
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const { data } = await API.get(`/api/planner/${user._id}?week=${getCurrentWeek()}`);
-        setPlan(data);
-      } catch {
-        setPlan(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (user) load();
-  }, [user]);
-
-  // Get today's meals
-  const today = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][new Date().getDay()];
-  const todayMeals = plan?.days?.[today] || [];
-  const todayCalories = todayMeals.reduce((sum, m) => sum + (m.calories || 0), 0);
-
-  // Mock weekly calorie data (from plan or generated)
-  const weeklyData = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => {
-    const dayKey = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'][i];
-    const dayMeals = plan?.days?.[dayKey] || [];
-    const cals = dayMeals.reduce((sum, m) => sum + (m.calories || 0), 0);
-    return { day, calories: cals || Math.floor(1600 + Math.random() * 800) };
-  });
+  const [bmiWeight, setBmiWeight] = useState('');
+  const [bmiHeight, setBmiHeight] = useState('');
 
   const bmiResult = calculateBMI(Number(bmiWeight), Number(bmiHeight));
 
@@ -74,13 +52,8 @@ const Dashboard = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen pt-24 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-accent animate-spin" />
-      </div>
-    );
-  }
+  // Aggregate stats from sample data
+  const avgCalories = Math.round(sampleWeeklyData.reduce((s, d) => s + d.calories, 0) / 7);
 
   return (
     <div className="min-h-screen pt-24 pb-16">
@@ -93,18 +66,18 @@ const Dashboard = () => {
         >
           <h1 className="font-heading font-bold text-3xl text-white flex items-center gap-3">
             <LayoutDashboard className="text-accent-light" />
-            Dashboard
+            Nutrition Dashboard
           </h1>
           <p className="text-text-secondary text-sm mt-1">
-            Welcome back, {user?.name?.split(' ')[0]}! Here's your nutrition overview.
+            Track your nutrition, hydration, and body metrics in one place.
           </p>
         </motion.div>
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
-            { label: "Today's Calories", value: `${todayCalories}`, icon: Flame, color: 'text-orange-400' },
-            { label: 'Meals Planned', value: todayMeals.length, icon: UtensilsCrossed, color: 'text-accent-light' },
+            { label: 'Avg Daily Calories', value: avgCalories.toLocaleString(), icon: Flame, color: 'text-orange-400' },
+            { label: 'Weekly Meals', value: '21', icon: UtensilsCrossed, color: 'text-accent-light' },
             { label: 'Water Intake', value: `${waterIntake}/${WATER_GOAL}`, icon: Droplets, color: 'text-blue-400' },
             { label: 'BMI Score', value: bmiResult.bmi || '—', icon: Calculator, color: 'text-emerald-400' },
           ].map((stat, i) => {
@@ -137,13 +110,13 @@ const Dashboard = () => {
           >
             <h2 className="font-heading font-semibold text-lg text-white mb-1 flex items-center gap-2">
               <TrendingUp size={18} className="text-accent-light" />
-              Weekly Calorie Intake
+              Weekly Calorie Overview
             </h2>
-            <p className="text-text-secondary text-xs mb-6">Last 7 days</p>
+            <p className="text-text-secondary text-xs mb-6">Sample data — plan meals to see your actual intake</p>
 
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={weeklyData}>
+                <AreaChart data={sampleWeeklyData}>
                   <defs>
                     <linearGradient id="colorCal" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#7B4FD4" stopOpacity={0.3} />
@@ -160,7 +133,7 @@ const Dashboard = () => {
             </div>
           </motion.div>
 
-          {/* Today's Meals */}
+          {/* Quick Tips */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -168,30 +141,26 @@ const Dashboard = () => {
             className="glass-strong p-6"
           >
             <h2 className="font-heading font-semibold text-lg text-white mb-1 flex items-center gap-2">
-              <UtensilsCrossed size={18} className="text-accent-light" />
-              Today's Meals
+              <Activity size={18} className="text-emerald-400" />
+              Nutrition Tips
             </h2>
-            <p className="text-text-secondary text-xs mb-4 capitalize">{today === 'sun' ? 'Sunday' : today === 'mon' ? 'Monday' : today === 'tue' ? 'Tuesday' : today === 'wed' ? 'Wednesday' : today === 'thu' ? 'Thursday' : today === 'fri' ? 'Friday' : 'Saturday'}</p>
+            <p className="text-text-secondary text-xs mb-4">Daily reminders for healthy living</p>
 
-            {todayMeals.length > 0 ? (
-              <div className="space-y-3">
-                {todayMeals.map((meal, i) => (
-                  <div key={i} className="flex items-center gap-3 bg-bg/50 rounded-xl px-3 py-2.5">
-                    <img src={meal.image} alt="" className="w-12 h-12 rounded-xl object-cover" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-white font-medium truncate">{meal.name}</p>
-                      <p className="text-xs text-text-secondary">{meal.calories} kcal • {meal.category}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <UtensilsCrossed size={32} className="text-text-secondary mb-3 opacity-30" />
-                <p className="text-text-secondary text-sm">No meals planned for today.</p>
-                <a href="/planner" className="text-accent-light text-xs mt-1 hover:underline">Go to Planner →</a>
-              </div>
-            )}
+            <div className="space-y-3">
+              {[
+                { emoji: '🥤', tip: 'Drink at least 8 glasses of water daily for optimal hydration and metabolism.' },
+                { emoji: '🥦', tip: 'Fill half your plate with vegetables for fiber, vitamins, and minerals.' },
+                { emoji: '⏰', tip: 'Try to eat meals at consistent times — your body thrives on routine.' },
+                { emoji: '🏃', tip: 'Pair good nutrition with 30 minutes of daily activity for best results.' },
+                { emoji: '😴', tip: 'Quality sleep (7-9 hrs) is essential — poor sleep increases cravings.' },
+                { emoji: '📝', tip: 'Use the meal planner to prep ahead — planned meals = healthier choices.' },
+              ].map((item, i) => (
+                <div key={i} className="flex items-start gap-3 bg-bg/50 rounded-xl px-4 py-3">
+                  <span className="text-lg flex-shrink-0 mt-0.5">{item.emoji}</span>
+                  <p className="text-text-secondary text-sm leading-relaxed">{item.tip}</p>
+                </div>
+              ))}
+            </div>
           </motion.div>
 
           {/* BMI Calculator */}
